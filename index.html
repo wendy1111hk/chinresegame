@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>開心認字樂園</title>
+<style>
+    /* 針對讀寫障礙友好的設計：柔和背景，大字體，無干擾 */
+    :root {
+        --bg-color: #FFF8E1; /* 米黃色，護眼 */
+        --card-bg: #FFFFFF;
+        --primary-color: #FFAB91; /* 柔和的珊瑚色 */
+        --secondary-color: #80CBC4; /* 柔和的薄荷綠 */
+        --text-color: #5D4037;
+        --font-main: "KaiTi", "BiauKai", "DFKai-SB", cursive; /* 楷體較接近手寫 */
+    }
+
+    body {
+        background-color: var(--bg-color);
+        font-family: var(--font-main);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        user-select: none;
+    }
+
+    h1 {
+        color: #FF7043;
+        font-size: 2em;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px #fff;
+    }
+
+    .menu {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    button {
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-family: var(--font-main);
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    button:active {
+        transform: scale(0.95);
+    }
+
+    .btn-study { background-color: var(--secondary-color); color: white; }
+    .btn-game { background-color: var(--primary-color); color: white; }
+    .btn-nav { background-color: #BCAAA4; color: white; padding: 10px 20px; }
+    
+    /* 容器設計 */
+    #app-container {
+        background: var(--card-bg);
+        width: 90%;
+        max-width: 500px;
+        border-radius: 30px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        text-align: center;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Flashcard 樣式 */
+    .flashcard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: popIn 0.5s ease;
+    }
+
+    .emoji-display {
+        font-size: 8rem;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+    }
+
+    .word-display {
+        font-size: 6rem;
+        font-weight: bold;
+        color: var(--text-color);
+        margin-bottom: 10px;
+    }
+
+    /* Game 樣式 */
+    .game-area {
+        width: 100%;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .option-btn {
+        background-color: #E0F2F1;
+        font-size: 2.5rem;
+        padding: 20px;
+        border-radius: 20px;
+        color: var(--text-color);
+    }
+
+    .message {
+        font-size: 1.5rem;
+        height: 40px;
+        margin-top: 15px;
+        color: #FF7043;
+        font-weight: bold;
+    }
+
+    /* 動畫 */
+    @keyframes popIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .shake {
+        animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        50% { transform: translateX(10px); }
+        75% { transform: translateX(-10px); }
+        100% { transform: translateX(0); }
+    }
+    
+    .hidden { display: none !important; }
+
+</style>
+</head>
+<body>
+
+<h1>🐻 認字小遊戲</h1>
+
+<div class="menu">
+    <button class="btn-study" onclick="startMode('study')">📖 溫習卡 (Flashcard)</button>
+    <button class="btn-game" onclick="startMode('game')">🎮 配對遊戲</button>
+</div>
+
+<div id="app-container">
+    <div id="welcome-msg">
+        <p style="font-size:1.5rem">點選上面的按鈕開始！<br>加油！❤️</p>
+    </div>
+
+    <!-- 溫習模式介面 -->
+    <div id="study-mode" class="hidden">
+        <div class="flashcard">
+            <div id="study-emoji" class="emoji-display"></div>
+            <div id="study-word" class="word-display"></div>
+        </div>
+        <div style="margin-top: 30px; display:flex; gap:20px;">
+            <button class="btn-nav" onclick="prevCard()">⬅️ 上一個</button>
+            <button class="btn-nav" onclick="nextCard()">下一個 ➡️</button>
+        </div>
+    </div>
+
+    <!-- 遊戲模式介面 -->
+    <div id="game-mode" class="hidden game-area">
+        <div style="font-size: 1.2rem; margin-bottom: 10px;">哪個字是：</div>
+        <div id="game-emoji" class="emoji-display" style="font-size: 6rem;"></div>
+        <div id="game-message" class="message"></div>
+        <div id="options-container" class="options-grid">
+            <!-- 選項按鈕會在這裡生成 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // 50個字的資料庫
+    const vocabulary = [
+        { char: "口", emoji: "👄" }, { char: "手", emoji: "🤚" }, { char: "足", emoji: "🦶" }, { char: "耳", emoji: "👂" }, { char: "目", emoji: "👁️" },
+        { char: "心", emoji: "❤️" }, { char: "頭", emoji: "🙆‍♂️" }, { char: "牙", emoji: "🦷" }, { char: "舌", emoji: "👅" }, { char: "力", emoji: "💪" },
+        { char: "日", emoji: "☀️" }, { char: "月", emoji: "🌙" }, { char: "山", emoji: "⛰️" }, { char: "水", emoji: "💧" }, { char: "火", emoji: "🔥" },
+        { char: "土", emoji: "🌱" }, { char: "木", emoji: "🌳" }, { char: "雨", emoji: "🌧️" }, { char: "風", emoji: "💨" }, { char: "天", emoji: "☁️" },
+        { char: "貓", emoji: "🐱" }, { char: "狗", emoji: "🐶" }, { char: "魚", emoji: "🐟" }, { char: "鳥", emoji: "🐦" }, { char: "羊", emoji: "🐑" },
+        { char: "牛", emoji: "🐮" }, { char: "馬", emoji: "🐴" }, { char: "蟲", emoji: "🐛" }, { char: "龜", emoji: "🐢" }, { char: "兔", emoji: "🐰" },
+        { char: "門", emoji: "🚪" }, { char: "車", emoji: "🚗" }, { char: "燈", emoji: "💡" }, { char: "書", emoji: "📖" }, { char: "筆", emoji: "✏️" },
+        { char: "杯", emoji: "🥤" }, { char: "衣", emoji: "👕" }, { char: "鐘", emoji: "⏰" }, { char: "床", emoji: "🛏️" }, { char: "傘", emoji: "☔" },
+        { char: "一", emoji: "1️⃣" }, { char: "十", emoji: "🔟" }, { char: "上", emoji: "⬆️" }, { char: "下", emoji: "⬇️" }, { char: "大", emoji: "🐘" },
+        { char: "小", emoji: "🐜" }, { char: "紅", emoji: "🔴" }, { char: "藍", emoji: "🔵" }, { char: "男", emoji: "👦" }, { char: "女", emoji: "👧" }
+    ];
+
+    let currentIndex = 0;
+    let currentMode = '';
+
+    const el = (id) => document.getElementById(id);
+
+    function startMode(mode) {
+        currentMode = mode;
+        el('welcome-msg').classList.add('hidden');
+        el('study-mode').classList.add('hidden');
+        el('game-mode').classList.add('hidden');
+        
+        if (mode === 'study') {
+            el('study-mode').classList.remove('hidden');
+            currentIndex = 0;
+            showCard();
+        } else {
+            el('game-mode').classList.remove('hidden');
+            newGameRound();
+        }
+    }
+
+    // --- Study Mode Logic ---
+    function showCard() {
+        const item = vocabulary[currentIndex];
+        el('study-emoji').innerText = item.emoji;
+        el('study-word').innerText = item.char;
+    }
+
+    function nextCard() {
+        currentIndex = (currentIndex + 1) % vocabulary.length;
+        showCard();
+    }
+
+    function prevCard() {
+        currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length;
+        showCard();
+    }
+
+    // --- Game Mode Logic ---
+    function newGameRound() {
+        el('game-message').innerText = "";
+        
+        // Randomly pick a target
+        const targetIndex = Math.floor(Math.random() * vocabulary.length);
+        const target = vocabulary[targetIndex];
+        
+        el('game-emoji').innerText = target.emoji;
+        
+        // Generate options (1 correct + 3 wrong)
+        let options = [target];
+        while (options.length < 4) {
+            const randomItem = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+            if (!options.includes(randomItem)) {
+                options.push(randomItem);
+            }
+        }
+        
+        // Shuffle options
+        options.sort(() => Math.random() - 0.5);
+        
+        // Render buttons
+        const container = el('options-container');
+        container.innerHTML = '';
+        
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt.char;
+            btn.onclick = () => checkAnswer(opt, target, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, target, btnElement) {
+        if (selected.char === target.char) {
+            el('game-message').innerText = "答對了！好棒！🌟";
+            btnElement.style.backgroundColor = "#A5D6A7"; // Green
+            setTimeout(newGameRound, 1500);
+        } else {
+            el('game-message').innerText = "再試一次喔！💪";
+            btnElement.style.backgroundColor = "#FFCCBC"; // Redish
+            btnElement.classList.add('shake');
+            setTimeout(() => btnElement.classList.remove('shake'), 500);
+        }
+    }
+</script>
+
+</body>
+</html>
